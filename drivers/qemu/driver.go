@@ -16,6 +16,7 @@ import (
 	hclog "github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/nomad/drivers/shared/eventer"
 	"github.com/hashicorp/nomad/drivers/shared/executor"
+	"github.com/hashicorp/nomad/helper/pluginutils/hclutils"
 	"github.com/hashicorp/nomad/helper/pluginutils/loader"
 	"github.com/hashicorp/nomad/plugins/base"
 	"github.com/hashicorp/nomad/plugins/drivers"
@@ -106,11 +107,11 @@ var (
 
 // TaskConfig is the driver configuration of a taskConfig within a job
 type TaskConfig struct {
-	ImagePath        string         `codec:"image_path"`
-	Accelerator      string         `codec:"accelerator"`
-	Args             []string       `codec:"args"`     // extra arguments to qemu executable
-	PortMap          map[string]int `codec:"port_map"` // A map of host port and the port name defined in the image manifest file
-	GracefulShutdown bool           `codec:"graceful_shutdown"`
+	ImagePath        string                `codec:"image_path"`
+	Accelerator      string                `codec:"accelerator"`
+	Args             []string              `codec:"args"`     // extra arguments to qemu executable
+	PortMap          hclutils.MapStringInt `codec:"port_map"` // A map of host port and the port name defined in the image manifest file
+	GracefulShutdown bool                  `codec:"graceful_shutdown"`
 }
 
 // TaskState is the state which is encoded in the handle returned in StartTask.
