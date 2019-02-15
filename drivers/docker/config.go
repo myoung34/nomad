@@ -276,9 +276,9 @@ var (
 			"volume_options": hclspec.NewBlock("volume_options", false, hclspec.NewObject(map[string]*hclspec.Spec{
 				"no_copy": hclspec.NewAttr("no_copy", "bool", false),
 				"labels":  hclspec.NewBlockAttrs("labels", "string", false),
-				"driver_config": hclspec.NewBlockSet("driver_config", hclspec.NewObject(map[string]*hclspec.Spec{
+				"driver_config": hclspec.NewBlock("driver_config", false, hclspec.NewObject(map[string]*hclspec.Spec{
 					"name":    hclspec.NewAttr("name", "string", false),
-					"options": hclspec.NewBlockAttrs("name", "string", false),
+					"options": hclspec.NewBlockAttrs("options", "string", false),
 				})),
 			})),
 		})),
