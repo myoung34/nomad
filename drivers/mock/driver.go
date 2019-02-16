@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -555,6 +556,12 @@ func (d *Driver) ExecTask(taskID string, cmd []string, timeout time.Duration) (*
 		ExitResult: &drivers.ExitResult{},
 	}
 	return &res, nil
+}
+
+func (d *Driver) ExecTaskStreaming(ctx context.Context, taskID string, cmd []string,
+	stdin io.Reader, stdout, stderr io.Writer,
+	tty bool, resizeCh <-chan drivers.TerminalSize) (*drivers.ExitResult, error) {
+	return nil, errors.New("not supported")
 }
 
 // GetTaskConfig is unique to the mock driver and for testing purposes only. It

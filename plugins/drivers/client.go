@@ -387,5 +387,79 @@ func (d *driverPluginClient) ExecTask(taskID string, cmd []string, timeout time.
 	}
 
 	return result, nil
+}
 
+func (d *driverPluginClient) ExecTaskStreaming(ctx context.Context, taskID string, cmd []string,
+	stdin io.Reader, stdout, stderr io.Writer,
+	tty bool, resizeCh <-chan TerminalSize) (*ExitResult, error) {
+
+	stream, err := d.client.ExecTaskStreaming(ctx)
+	if err != nil {
+		return nil, grpcutils.HandleGrpcErr(err, d.doneCtx)
+	}
+
+	err = stream.Send(&proto.ExecTaskStreamingRequest{
+		Setup: &proto.ExecTaskStreamingRequest_Setup{
+			TaskId:  taskID,
+			Command: cmd,
+		},
+	})
+	if err != nil {
+		return nil, grpcutils.HandleGrpcErr(err, d.doneCtx)
+	}
+
+	go func() {
+		select {
+		case <-ctx.Done():
+			return
+		case newSize := <-resizeCh:
+			stream.Send(&proto.ExecTaskStreamingRequest{
+				Resize: &proto.ExecTaskStreamingRequest_TerminalSize{
+					Height: int32(newSize.Height),
+					Width:  int32(newSize.Width),
+				},
+			})
+		}
+	}()
+
+	go func() {
+		bytes := make([]byte, 1024)
+
+		for {
+			n, err := stdin.Read(bytes)
+			if err != nil {
+				return
+			}
+
+			_ = stream.Send(&proto.ExecTaskStreamingRequest{
+				Input: &proto.ExecTaskStreamingRequest_Input{
+					Value: bytes[:n],
+				},
+			})
+
+		}
+	}()
+
+	for {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+
+		out, err := stream.Recv()
+		if err != nil {
+			return nil, grpcutils.HandleGrpcErr(err, d.doneCtx)
+		}
+
+		switch {
+		case out.Output != nil:
+			switch out.Output.Type {
+			case proto.ExecTaskStreamingResponse_Output_STDOUT:
+				stdout.Write(out.Output.Value)
+			case proto.ExecTaskStreamingResponse_Output_STDERR:
+				stderr.Write(out.Output.Value)
+			}
+		case out.Result != nil:
+			return exitResultFromProto(out.Result), nil
+		}
+	}
 }

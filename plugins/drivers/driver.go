@@ -54,6 +54,9 @@ type DriverPlugin interface {
 
 	SignalTask(taskID string, signal string) error
 	ExecTask(taskID string, cmd []string, timeout time.Duration) (*ExecTaskResult, error)
+	ExecTaskStreaming(ctx context.Context, taskID string, cmd []string,
+		in io.Reader, out, err io.Writer,
+		tty bool, resizeCh <-chan TerminalSize) (*ExitResult, error)
 }
 
 // InternalDriverPlugin is an interface that exposes functions that are only
@@ -125,6 +128,11 @@ type Capabilities struct {
 
 	//FSIsolation indicates what kind of filesystem isolation the driver supports.
 	FSIsolation FSIsolation
+}
+
+type TerminalSize struct {
+	Height int32
+	Width  int32
 }
 
 type TaskConfig struct {

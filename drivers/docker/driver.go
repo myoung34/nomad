@@ -2,7 +2,9 @@ package docker
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"path/filepath"
@@ -1144,6 +1146,12 @@ func (d *Driver) ExecTask(taskID string, cmd []string, timeout time.Duration) (*
 	defer cancel()
 
 	return h.Exec(ctx, cmd[0], cmd[1:])
+}
+
+func (d *Driver) ExecTaskStreaming(ctx context.Context, taskID string, cmd []string,
+	stdin io.Reader, stdout, stderr io.Writer,
+	tty bool, resizeCh <-chan drivers.TerminalSize) (*drivers.ExitResult, error) {
+	return nil, errors.New("not supported")
 }
 
 // dockerClients creates two *docker.Client, one for long running operations and

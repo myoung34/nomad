@@ -130,7 +130,7 @@ func (a *Allocations) Exec(conn io.ReadWriteCloser) {
 		handleStreamResultError(errors.New("command is not present"), helper.Int64ToPtr(400), encoder)
 	}
 
-	_, err := a.c.getAllocRunner(req.AllocID)
+	ar, err := a.c.getAllocRunner(req.AllocID)
 	if err != nil {
 		code := helper.Int64ToPtr(500)
 		if structs.IsErrUnknownAllocation(err) {
@@ -170,6 +170,10 @@ func (a *Allocations) Exec(conn io.ReadWriteCloser) {
 		return
 	}
 
+	inReader, inWriter := io.Pipe()
+	outReader, outWriter := io.Pipe()
+	errReader, errWriter := io.Pipe()
+
 	// Create a goroutine to detect the remote side closing
 	// TODO: Read input
 	go func() {
@@ -185,9 +189,11 @@ func (a *Allocations) Exec(conn io.ReadWriteCloser) {
 				break
 			}
 			a.c.logger.Warn("received input", "input", fmt.Sprintf("%#v", readFrame), "error", err)
+			inWriter.Write(readFrame.Data)
 		}
-
 	}()
+
+	ar.GetTaskEventHandler(req.Task)
 
 	frame := &sframer.StreamFrame{}
 	frame.Data = []byte("Yay I am here\n")

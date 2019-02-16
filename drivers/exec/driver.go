@@ -2,7 +2,9 @@ package exec
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -527,4 +529,10 @@ func (d *Driver) ExecTask(taskID string, cmd []string, timeout time.Duration) (*
 			ExitCode: exitCode,
 		},
 	}, nil
+}
+
+func (d *Driver) ExecTaskStreaming(ctx context.Context, taskID string, cmd []string,
+	stdin io.Reader, stdout, stderr io.Writer,
+	tty bool, resizeCh <-chan drivers.TerminalSize) (*drivers.ExitResult, error) {
+	return nil, errors.New("not supported")
 }
