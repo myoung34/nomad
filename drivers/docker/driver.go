@@ -145,6 +145,7 @@ func (d *Driver) RecoverTask(handle *drivers.TaskHandle) error {
 
 	dlogger, dloggerPluginClient, err := docklog.ReattachDockerLogger(reattach)
 	if err != nil {
+		d.logger.Error("failed to reattach to docker logger process", "error", err)
 		return fmt.Errorf("failed to reattach to docker logger process")
 	}
 
