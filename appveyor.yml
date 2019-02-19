@@ -9,6 +9,9 @@ environment:
   GOMAXPROCS: 1
 
 install:
+  - cmd: docker info
+  - cmd: docker image ls
+  - cmd: docker run --rm dantoml/busybox-windows:08012019 echo hi there
   - cmd: set PATH=%GOBIN%;c:\go\bin;%PATH%
   - cmd: echo %Path%
   - cmd: go version
